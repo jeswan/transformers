@@ -49,6 +49,14 @@ if _has_sklearn:
             "spearmanr": spearman_corr,
             "corr": (pearson_corr + spearman_corr) / 2,
         }
+    
+    def f1_score(preds, labels):
+        f1_micro = f1_score(y_true=labels, y_pred=preds, average = 'micro')
+        f1_macro = f1_score(y_true=labels, y_pred=preds, average = 'macro')
+        return {
+            "f1_micro": f1_micro,
+            "f1_macro": f1_macro,
+        }
 
     def glue_compute_metrics(task_name, preds, labels):
         assert len(preds) == len(labels)
@@ -76,6 +84,8 @@ if _has_sklearn:
             return {"acc": simple_accuracy(preds, labels)}
         elif task_name == "boolq":
             return {"acc": simple_accuracy(preds, labels)}
+        elif task_name == "multifc":
+            return {"acc": f1_score(preds, labels)}
         else:
             raise KeyError(task_name)
 
