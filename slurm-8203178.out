@@ -1,0 +1,7 @@
+/opt/slurm/data/slurmd/job8203178/slurm_script: line 14: activate: No such file or directory
+Traceback (most recent call last):
+  File "./examples/run_glue.py", line 701, in <module>
+    main()
+  File "./examples/run_glue.py", line 565, in main
+    args.output_dir
+ValueError: Output directory (/scratch/igw212/nlu/boolq_run/) already exists and is not empty. Use --overwrite_output_dir to overcome.
