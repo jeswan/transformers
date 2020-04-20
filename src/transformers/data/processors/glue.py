@@ -18,6 +18,8 @@
 import logging
 import os
 import json
+import pandas as pd
+import csv
 
 from ...file_utils import is_tf_available
 from .utils import DataProcessor, InputExample, InputFeatures
@@ -166,57 +168,6 @@ def glue_convert_examples_to_features(
 
     return features
 
-class MultiFCProcessor(DataProcessor):
-    """Processor for the MultiFC data set."""
-
-    def get_example_from_tensor_dict(self, tensor_dict):
-        """See base class."""
-        return InputExample(
-            tensor_dict["idx"].numpy(),
-            tensor_dict["claim"].numpy().decode("utf-8"),
-            str(tensor_dict["label"].numpy()),
-        )
-
-    def get_train_examples(self, data_dir):
-        """See base class."""
-        return self._create_examples(self._read_tsv(os.path.join(data_dir, "train.tsv")), "train")
-
-    def get_dev_examples(self, data_dir):
-        """See base class."""
-        return self._create_examples(self._read_tsv(os.path.join(data_dir, "dev.tsv")), "dev")
-
-    def get_labels(self):
-        """See base class."""
-        return ['half-true', 'true', 'fiction!', 'false', 'mostly false', 'determination: mostly true',
-                'truth!', 'full flop', 'mixture', 'unproven', 'in-between', 'promise kept', 'mostly true',
-                'pants on fire!', '0', '2', 'none', 'determination: misleading', 'mostly fiction!', 'bogus warning',
-                'determination: false', '1', '2 pinnochios', 'mostly truth!', 'confirmed authorship!', 'true messages',
-                'incorrect', 'compromise', 'determination: true', '4 pinnochios', 'a lot of baloney', 'truth! & fiction!',
-                'not the whole story', 'not yet rated', 'facebook scams', 'stalled', 'verdict: true', 'authorship confirmed!',
-                'promise broken', '3', 'misleading', 'verdict: false', 'unsubstantiated messages', 'mostly-correct', 'in-the-green',
-                'in-the-red', 'fiction! & satire!', 'verdict: unsubstantiated', '10', 'factscan score: false', 'miscaptioned', 'in the works',
-                'scam!', '3 pinnochios', 'statirical reports', 'fake news', 'truth! & outdated!', 'fake', 'commentary!', 'scam', 'correct',
-                'unsupported', 'unproven!', 'outdated', 'factscan score: misleading', 'half true', 'factscan score: true', 'some baloney',
-                'rating: false', 'legend', 'half flip', 'fact', 'determination: huckster propaganda', 'previously truth! now resolved!', 'opinion!',
-                'truth! & unproven!', 'truth! & misleading!', 'needs context', 'unobservable', 'no evidence', 'exaggerated', 'understated', 'investigation pending!',
-                'determination: barely true', 'outdated!', 'misattributed', 'accurate', 'inaccurate attribution!', 'mostly_true', 'None', 'incorrect attribution!',
-                'virus!', 'conclusion: unclear', 'unverified', 'no flip', 'spins the facts', 'disputed!', 'a little baloney', 'correct attribution!',
-                'distorts the facts', 'cherry picks', 'correct attribution', 'misleading recommendations', 'verified', 'conclusion: accurate', 'partly true',
-                'mostly_false', 'grass roots movement!', 'fiction', '4', 'conclusion: false', 'misleading!', 'partially true', 'determination: a stretch',
-                'truth! & disputed!', 'we rate this claim false', 'exaggerates']
-
-    def _create_examples(self, lines, set_type):
-        """Creates examples for the training and dev sets."""
-        examples = []
-        for (i, line) in enumerate(lines):
-            if i == 0:
-                continue
-            guid = "%s-%s" % (set_type, line[0])
-            text_a = line[1]
-            label = line[2]
-            examples.append(InputExample(guid=guid, text_a=text_a, label=label))
-        return examples
-
 
 class MrpcProcessor(DataProcessor):
     """Processor for the MRPC data set (GLUE version)."""
@@ -256,6 +207,94 @@ class MrpcProcessor(DataProcessor):
             examples.append(InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label))
         return examples
 
+class MultifcProcessor(DataProcessor):
+    """Processor for the MultiFC data set."""
+
+    def get_example_from_tensor_dict(self, tensor_dict):
+        """See base class."""
+        return InputExample(
+            tensor_dict["idx"].numpy(),
+            tensor_dict["sentence1"].numpy().decode("utf-8"),
+            tensor_dict["sentence2"].numpy().decode("utf-8"),
+            str(tensor_dict["label"].numpy()),
+        )
+
+    def get_train_examples(self, data_dir):
+        """See base class."""
+        return self._create_examples(data_dir, "train")
+
+    def get_dev_examples(self, data_dir):
+        """See base class."""
+        return self._create_examples(data_dir, "dev")
+
+    def get_labels(self):
+        """See base class."""
+        return ['half-true', 'true', 'fiction!', 'false', 'mostly false', 'determination: mostly true',
+                'truth!', 'full flop', 'mixture', 'unproven', 'in-between', 'promise kept', 'mostly true',
+                'pants on fire!', '0', '2', 'none', 'determination: misleading', 'mostly fiction!', 'bogus warning',
+                'determination: false', '1', '2 pinnochios', 'mostly truth!', 'confirmed authorship!', 'true messages',
+                'incorrect', 'compromise', 'determination: true', '4 pinnochios', 'a lot of baloney', 'truth! & fiction!',
+                'not the whole story', 'not yet rated', 'facebook scams', 'stalled', 'verdict: true', 'authorship confirmed!',
+                'promise broken', '3', 'misleading', 'verdict: false', 'unsubstantiated messages', 'mostly-correct', 'in-the-green',
+                'in-the-red', 'fiction! & satire!', 'verdict: unsubstantiated', '10', 'factscan score: false', 'miscaptioned', 'in the works',
+                'scam!', '3 pinnochios', 'statirical reports', 'fake news', 'truth! & outdated!', 'fake', 'commentary!', 'scam', 'correct',
+                'unsupported', 'unproven!', 'outdated', 'factscan score: misleading', 'half true', 'factscan score: true', 'some baloney',
+                'rating: false', 'legend', 'half flip', 'fact', 'determination: huckster propaganda', 'previously truth! now resolved!', 'opinion!',
+                'truth! & unproven!', 'truth! & misleading!', 'needs context', 'unobservable', 'no evidence', 'exaggerated', 'understated', 'investigation pending!',
+                'determination: barely true', 'outdated!', 'misattributed', 'accurate', 'inaccurate attribution!', 'mostly_true', 'None', 'incorrect attribution!',
+                'virus!', 'conclusion: unclear', 'unverified', 'no flip', 'spins the facts', 'disputed!', 'a little baloney', 'correct attribution!',
+                'distorts the facts', 'cherry picks', 'correct attribution', 'misleading recommendations', 'verified', 'conclusion: accurate', 'partly true',
+                'mostly_false', 'grass roots movement!', 'fiction', '4', 'conclusion: false', 'misleading!', 'partially true', 'determination: a stretch',
+                'truth! & disputed!', 'we rate this claim false', 'exaggerates']
+
+    def _create_examples(self, data_dir, set_type):
+        """Creates examples for the training and dev sets."""
+
+
+        print(data_dir)
+        # Load the dataset into a pandas dataframe.
+        df = pd.read_csv(os.path.join(data_dir, set_type + ".tsv"), delimiter='\t', header=None, quoting=csv.QUOTE_NONE, \
+            names= ['claimID', 'claim', 'label', 'claimURL', 'reason', 'categories', 'speaker', \
+            'checker', 'tags', 'articleTitle', 'publishDate', 'claimDate', 'entities'])
+
+        # Contains empty claim
+        if 'bove-00197' in df['claimID']:
+            indexNames = df[ df['claimID'] == 'bove-00197' ].index
+            # Delete these row indexes from dataFrame
+            df.drop(indexNames , inplace=True)
+
+        ids = df.claimID
+        snippet = df.claim.values
+        labels = df.label.values
+
+        assert(len(ids) == len(labels))
+
+        pre_instances = []
+        claimsnippet_labels = []
+        count = 0
+        n_claims = len(list(df.claim))
+
+        examples = []
+        for row_id in range(n_claims):
+            claim, claimID, label = list(df.claim)[row_id], list(df.claimID)[row_id], list(df.label)[row_id]
+            if claimID == 'bove-00197':
+                continue
+            try:
+                f=open(data_dir + "/snippets/{claimID}".format(claimID=claimID), "r")
+                i = 0
+                for line in f.readlines():
+                    split = line.split("\t")
+                    snippet = split[2]
+                    guid = "%s-%s_%s" % (set_type, claimID, str(i))
+                    i += 1
+                    examples.append(InputExample(guid=guid, text_a=claim, text_b=snippet, label=label))
+            except FileNotFoundError:
+                    split = line.split("\t")
+                    snippet = split[2]
+                    guid = "%s-%s_0" % (set_type, claimID)
+                    examples.append(InputExample(guid=guid, text_a=claim, text_b='[UNK]', label=label))
+
+        return examples
 
 class MnliProcessor(DataProcessor):
     """Processor for the MultiNLI data set (GLUE version)."""
@@ -628,8 +667,8 @@ glue_processors = {
     "qnli": QnliProcessor,
     "rte": RteProcessor,
     "wnli": WnliProcessor,
+    "multifc": MultifcProcessor,
     "boolq": BoolqProcessor,
-    "multifc": MultiFCProcessor
 }
 
 glue_output_modes = {
@@ -643,6 +682,6 @@ glue_output_modes = {
     "qnli": "classification",
     "rte": "classification",
     "wnli": "classification",
-    "boolq": "classification"
+    "boolq": "classification",
     "multifc": "classification"
 }

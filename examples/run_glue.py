@@ -606,6 +606,7 @@ def main():
 
     # Prepare GLUE task
     args.task_name = args.task_name.lower()
+    print(processors)
     if args.task_name not in processors:
         raise ValueError("Task not found: %s" % (args.task_name))
     processor = processors[args.task_name]()
