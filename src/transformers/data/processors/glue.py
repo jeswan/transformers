@@ -255,28 +255,13 @@ class MultifcProcessor(DataProcessor):
             names= ['claimID', 'claim', 'label', 'claimURL', 'reason', 'categories', 'speaker', \
             'checker', 'tags', 'articleTitle', 'publishDate', 'claimDate', 'entities'])
 
-        # Contains empty claim
-        if 'bove-00197' in df['claimID']:
-            indexNames = df[ df['claimID'] == 'bove-00197' ].index
-            # Delete these row indexes from dataFrame
-            df.drop(indexNames , inplace=True)
-
-        ids = df.claimID
-        snippet = df.claim.values
-        labels = df.label.values
-
-        assert(len(ids) == len(labels))
-
-        pre_instances = []
-        claimsnippet_labels = []
-        count = 0
         n_claims = len(list(df.claim))
 
         examples = []
         for row_id in range(n_claims):
             claim, claimID, label = list(df.claim)[row_id], list(df.claimID)[row_id], list(df.label)[row_id]
-            if claimID == 'bove-00197':
-                continue
+            if pd.isna(claim) == np.nan:
+                claim == '[UNK]'
             try:
                 f=open(data_dir + "/snippets/{claimID}".format(claimID=claimID), "r")
                 i = 0
@@ -287,10 +272,10 @@ class MultifcProcessor(DataProcessor):
                     i += 1
                     examples.append(InputExample(guid=guid, text_a=claim, text_b=snippet, label=label))
             except FileNotFoundError:
-                    split = line.split("\t")
-                    snippet = split[2]
-                    guid = "%s-%s_0" % (set_type, claimID)
-                    examples.append(InputExample(guid=guid, text_a=claim, text_b='[UNK]', label=label))
+                i = 0
+                snippet = '[UNK]'
+                guid = "%s-%s_%s" % (set_type, claimID, i)
+                examples.append(InputExample(guid=guid, text_a=claim, text_b=snippet, label=label))
 
         return examples
 
