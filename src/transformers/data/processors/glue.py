@@ -250,8 +250,6 @@ class MultifcProcessor(DataProcessor):
     def _create_examples(self, data_dir, set_type):
         """Creates examples for the training and dev sets."""
 
-
-        print(data_dir)
         # Load the dataset into a pandas dataframe.
         df = pd.read_csv(os.path.join(data_dir, set_type + ".tsv"), delimiter='\t', header=None, quoting=csv.QUOTE_NONE, \
             names= ['claimID', 'claim', 'label', 'claimURL', 'reason', 'categories', 'speaker', \
