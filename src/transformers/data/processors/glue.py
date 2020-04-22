@@ -260,7 +260,7 @@ class MultifcProcessor(DataProcessor):
         examples = []
         for row_id in range(n_claims):
             claim, claimID, label = list(df.claim)[row_id], list(df.claimID)[row_id], list(df.label)[row_id]
-            if pd.isna(claim) == np.nan:
+            if pd.isna(claim) == True:
                 claim == '[UNK]'
             try:
                 f=open(data_dir + "/snippets/{claimID}".format(claimID=claimID), "r")
