@@ -215,7 +215,6 @@ class MultifcProcessor(DataProcessor):
         return InputExample(
             tensor_dict["idx"].numpy(),
             tensor_dict["sentence1"].numpy().decode("utf-8"),
-            tensor_dict["sentence2"].numpy().decode("utf-8"),
             str(tensor_dict["label"].numpy()),
         )
 
@@ -262,20 +261,22 @@ class MultifcProcessor(DataProcessor):
             claim, claimID, label = list(df.claim)[row_id], list(df.claimID)[row_id], list(df.label)[row_id]
             if pd.isna(claim) == True:
                 claim == '[UNK]'
-            try:
-                f=open(data_dir + "/snippets/{claimID}".format(claimID=claimID), "r")
-                i = 0
-                for line in f.readlines():
-                    split = line.split("\t")
-                    snippet = split[2]
-                    guid = "%s-%s_%s" % (set_type, claimID, str(i))
-                    i += 1
-                    examples.append(InputExample(guid=guid, text_a=claim, text_b=snippet, label=label))
-            except FileNotFoundError:
-                i = 0
-                snippet = '[UNK]'
-                guid = "%s-%s_%s" % (set_type, claimID, i)
-                examples.append(InputExample(guid=guid, text_a=claim, text_b=snippet, label=label))
+            examples.append(InputExample(guid=guid, text_a=claim, label=label))
+
+            # try:
+            #     f=open(data_dir + "/snippets/{claimID}".format(claimID=claimID), "r")
+            #     i = 0
+            #     for line in f.readlines():
+            #         split = line.split("\t")
+            #         snippet = split[2]
+            #         guid = "%s-%s_%s" % (set_type, claimID, str(i))
+            #         i += 1
+            #         examples.append(InputExample(guid=guid, text_a=claim, label=label))
+            # except FileNotFoundError:
+            #     i = 0
+            #     snippet = '[UNK]'
+            #     guid = "%s-%s_%s" % (set_type, claimID, i)
+            #     examples.append(InputExample(guid=guid, text_a=claim, label=label))
 
         return examples
 
