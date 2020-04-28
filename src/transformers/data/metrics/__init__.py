@@ -86,6 +86,8 @@ if _has_sklearn:
             return {"acc": simple_accuracy(preds, labels)}
         elif task_name == "multifc":
             return {"acc": f1_score(preds, labels)}
+        elif task_name == "multifc-fever":
+            return {"acc": f1_score(preds, labels)}
         else:
             raise KeyError(task_name)
 
