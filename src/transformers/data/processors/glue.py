@@ -217,6 +217,40 @@ class MultiFCProcessor(DataProcessor):
             examples.append(InputExample(guid=guid, text_a=text_a, label=label))
         return examples
 
+class MultiFCProcessor_fever(DataProcessor):
+    """Processor for the MultiFC data set."""
+
+    def get_example_from_tensor_dict(self, tensor_dict):
+        """See base class."""
+        return InputExample(
+            tensor_dict["idx"].numpy(),
+            tensor_dict["claim"].numpy().decode("utf-8"),
+            str(tensor_dict["label"].numpy()),
+        )
+
+    def get_train_examples(self, data_dir):
+        """See base class."""
+        return self._create_examples(self._read_tsv(os.path.join(data_dir, "train.tsv")), "train")
+
+    def get_dev_examples(self, data_dir):
+        """See base class."""
+        return self._create_examples(self._read_tsv(os.path.join(data_dir, "dev.tsv")), "dev")
+
+    def get_labels(self):
+        """See base class."""
+        return ['supported','refuted','not enough information']
+
+    def _create_examples(self, lines, set_type):
+        """Creates examples for the training and dev sets."""
+        examples = []
+        for (i, line) in enumerate(lines):
+            if i == 0:
+                continue
+            guid = "%s-%s" % (set_type, line[0])
+            text_a = line[1]
+            label = line[2]
+            examples.append(InputExample(guid=guid, text_a=text_a, label=label))
+        return examples
 
 class MrpcProcessor(DataProcessor):
     """Processor for the MRPC data set (GLUE version)."""
@@ -614,7 +648,8 @@ glue_tasks_num_labels = {
     "rte": 2,
     "wnli": 2,
     "boolq": 2,
-    "multifc": 117
+    "multifc": 117,
+    "multifc-fever": 3
 }
 
 glue_processors = {
@@ -629,7 +664,8 @@ glue_processors = {
     "rte": RteProcessor,
     "wnli": WnliProcessor,
     "boolq": BoolqProcessor,
-    "multifc": MultiFCProcessor
+    "multifc": MultiFCProcessor,
+    "multifc-fever": MultiFCProcessor_fever
 }
 
 glue_output_modes = {
@@ -645,4 +681,5 @@ glue_output_modes = {
     "wnli": "classification",
     "boolq": "classification"
     "multifc": "classification"
+    "multifc-fever": "classification"
 }
